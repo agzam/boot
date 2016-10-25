@@ -253,12 +253,12 @@
 (defn print-ex
   "Print exception to *err* as appropriate for the current *verbosity* level."
   [ex]
-  (case @*verbosity*
-    0 nil
-    1 (pretty/write-exception *err* ex
-        {:properties true :filter repl/standard-frame-filter})
-    2 (pretty/write-exception *err* ex {:properties true})
-    (binding [*out* *err*] (.printStackTrace ex))))
+  (cond
+    (= 0 @*verbosity*) nil
+    (::omit-stacktrace? (ex-data ex)) (fail (.getMessage ex))
+    (= 1 @*verbosity*) (pretty/write-exception *err* ex {:properties true :filter repl/standard-frame-filter})
+    (= 2 @*verbosity*) (pretty/write-exception *err* ex {:properties true})
+    :else (binding [*out* *err*] (.printStackTrace ex))))
 
 (defn print-tree
   "Pretty prints tree, with the optional prefixes prepended to each line. The
